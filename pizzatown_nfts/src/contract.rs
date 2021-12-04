@@ -34,8 +34,7 @@ pub fn instantiate(
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
-        .add_attribute("owner", OWNER_ADDR)
-        .add_attribute("total_supply", total_supply))
+        .add_attribute("owner", OWNER_ADDR))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -46,24 +45,10 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Transfer { amount, recipient } => try_transfer(deps, info, amount, recipient),
-        ExecuteMsg::Burn { amount } => try_burn(deps, info, amount),
-        ExecuteMsg::Send {
-            contract,
-            amount,
-            msg,
-        } => try_send(deps, info, contract, amount, msg),
-        ExecuteMsg::Mint { amount } => try_mint(deps, info, amount),
-        // TODO: the following need to go into a separate smart contract
-        ExecuteMsg::MintDog { amount } => try_mint_dog(deps, env, info, amount),
-        ExecuteMsg::MintAccessory { name, amount } => {
-            try_mint_accessory(deps, env, info, name, amount)
+        ExecuteMsg::MintPizza {} => try_mint_pizza(deps, env, info),
+        ExecuteMsg::MintPie { pizza_a_id, pizza_b_id } => {
+            try_mint_pie(deps, env, info, pizza_a_id, pizza_b_id)
         }
-        ExecuteMsg::SellDogOnMarket { dog_id, price } => {
-            try_sell_dog_on_market(deps, info, dog_id, price)
-        }
-        ExecuteMsg::BuyDogOnMarket { dog_id } => try_buy_dog_on_market(deps, info, dog_id),
-        ExecuteMsg::SpinTheWheel {} => try_spin_the_wheel(deps, env, info),
     }
 }
 
@@ -97,49 +82,29 @@ pub fn try_mint(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::Balance { address } => to_binary(&query_balance(deps, address)?),
-        QueryMsg::TokenInfo {} => to_binary(&query_token_info(deps)?),
-        // TODO: the following need to go into a separate smart contract
-        QueryMsg::GameInfo {} => to_binary(&query_game_info(deps)?),
         QueryMsg::Inventory { address } => to_binary(&query_inventory(deps, address)?),
-        QueryMsg::MarketListings {} => to_binary(&query_market_listings(deps)?),
     }
 }
 
-// TODO: the following need to go into a separate smart contract
-const SALES_COMMISSION_RATE: u128 = 20; // 5% = 0.05 = 100 / 20
 const SPIN_THE_WHEEL_PRICE_UUSD: u128 = 1_000_000_u128;
 const PRICE_DENOM: &str = "uusd";
 
-const DOG_CLASS_ATTR_RANGES: [[(u8, u8); 4]; 7] = [
-    [(5u8, 10u8), (1u8, 7u8), (1u8, 7u8), (1u8, 7u8)],
-    [(1u8, 7u8), (5u8, 10u8), (1u8, 7u8), (1u8, 7u8)],
-    [(1u8, 7u8), (1u8, 7u8), (5u8, 10u8), (1u8, 7u8)],
-    [(1u8, 7u8), (1u8, 7u8), (1u8, 7u8), (5u8, 10u8)],
-    [(7u8, 10u8), (7u8, 10u8), (1u8, 7u8), (1u8, 7u8)],
-    [(7u8, 10u8), (1u8, 7u8), (1u8, 7u8), (7u8, 10u8)],
-    [(1u8, 7u8), (1u8, 7u8), (7u8, 10u8), (7u8, 10u8)],
-];
-
-const ACCESSORY_NAMES: [&str; 3] = ["martini glass", "sparkle", "star"];
-
-fn create_random_dog(seed_timestamp: Timestamp, id: &String, name: &String, class: u8) -> DogData {
-    let ranges = DOG_CLASS_ATTR_RANGES[usize::from(class)];
-    return DogData {
-        class: class.clone(),
+fn create_random_pizza(seed_timestamp: Timestamp, id: &String) -> NftPizzaData {
+    return NftPizzaData {
         id: id.clone(),
-        name: name.clone(),
-        attr1: rand_int_between(seed_timestamp.plus_nanos(10u64), ranges[0].0, ranges[0].1),
-        attr2: rand_int_between(seed_timestamp.plus_nanos(20u64), ranges[1].0, ranges[1].1),
-        attr3: rand_int_between(seed_timestamp.plus_nanos(30u64), ranges[2].0, ranges[2].1),
-        attr4: rand_int_between(seed_timestamp.plus_nanos(40u64), ranges[3].0, ranges[3].1),
+        background: rand_int_between(seed_timestamp.plus_nanos(10u64), 1, 1 + 9),
+        pizza: rand_int_between(seed_timestamp.plus_nanos(10u64), 1, 1 + 7),
+        topping1: rand_int_between(seed_timestamp.plus_nanos(10u64), 1, 1 + 8),
+        topping2: rand_int_between(seed_timestamp.plus_nanos(10u64), 1, 1 + 8),
+        topping3: rand_int_between(seed_timestamp.plus_nanos(10u64), 1, 1 + 8),
     };
 }
 
-fn create_random_pizza(seed_timestamp: Timestamp, id: &String, name: &String, class: u8) -> NftPizzaData {
-}
-
-fn create_random_pie(seed_timestamp: Timestamp, id: &String, name: &String, class: u8) -> NftPieData {
+fn create_random_pie(seed_timestamp: Timestamp, id: &String) -> NftPieData {
+    return NftPieData {
+        id: id.clone(),
+        pie: rand_int_between(seed_timestamp.plus_nanos(10u64), 1, 1 + 10),
+    };
 }
 
 fn is_airdrop_eligible(deps: Deps, owner: String) -> bool {
@@ -159,35 +124,30 @@ fn try_mint_pizza(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    amount: Uint128,
 ) -> Result<Response, ContractError> {
     if info.sender != OWNER_ADDR {
         return Err(ContractError::Unauthorized {});
     }
-    for i in 0u128..amount.u128() {
-        let id = generate_id(Timestamp::from_nanos(env.block.time.nanos() + i as u64));
-        println!("minting pizza #{}: #{}", i, id);
-        let name = format!("Pizza #{}", id);
-        let class = rand_int_between(
-            Timestamp::from_nanos(env.block.time.nanos() + i as u64),
-            0u8,
-            6u8,
-        );
-        let nft_data = create_random_pizza(
-            Timestamp::from_nanos(env.block.time.nanos() + i as u64),
-            &id,
-            &name,
-            class,
-        );
-        let key = (info.sender.as_bytes(), id.as_bytes());
-        println!("key is {:?}", key);
-        NFT_PIZZAS.save(deps.storage, key, &nft_data)?;
-    }
+    let id = generate_id(Timestamp::from_nanos(env.block.time.nanos() as u64));
+    println!("minting pizza #{}: #{}", i, id);
+    let nft_data = create_random_pizza(
+        Timestamp::from_nanos(env.block.time.nanos() as u64),
+        &id,
+    );
+    let key = (info.sender.as_bytes(), id.as_bytes());
+    println!("key is {:?}", key);
+    NFT_PIZZAS.save(deps.storage, key, &nft_data)?;
 
     Ok(Response::new().add_attribute("method", "try_mint_pizza"))
 }
 
-fn try_mint_pie() {
+fn try_mint_pie(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    pizza_a_id: String,
+    pizza_b_id: String,
+) {
 
 }
 
@@ -271,46 +231,30 @@ fn query_game_info(deps: Deps) -> StdResult<GameInfoResponse> {
 }
 
 fn query_inventory(deps: Deps, address: String) -> StdResult<InventoryResponse> {
-    let dogs: Vec<_> = DOGS
+    let pizzas: Vec<_> = NFT_PIZZAS
         .prefix(address.as_bytes())
         .range(deps.storage, None, None, Order::Ascending)
         .collect();
-    // print_type_of(&dogs);
-    // println!("{:?}", dogs);
-    let mut dogs_response = Vec::new();
-    for dog in dogs {
-        let (_key, dog_data) = dog.unwrap();
-        dogs_response.push(dog_data);
+    let mut pizzas_response = Vec::new();
+    for pizza in pizzas {
+        let (_key, pizza_data) = pizza.unwrap();
+        pizzas_response.push(pizza_data);
     }
 
-    let accessories: Vec<_> = ACCESSORIES
+    let pies: Vec<_> = NFT_PIES
         .prefix(address.as_bytes())
         .range(deps.storage, None, None, Order::Ascending)
         .collect();
-    let mut accessories_response = Vec::new();
-    for accessory in accessories {
-        let (_key, accessory_data) = accessory.unwrap();
-        accessories_response.push(accessory_data);
+    let mut pies_response = Vec::new();
+    for pie in pies {
+        let (_key, pie_data) = pie.unwrap();
+        pies_response.push(pie_data);
     }
 
     return Ok(InventoryResponse {
         address,
-        dogs: dogs_response,
-        accessories: accessories_response,
-    });
-}
-
-fn query_market_listings(deps: Deps) -> StdResult<MarketListingsResponse> {
-    let listings: Vec<_> = MARKET_LISTINGS_DOGS
-        .range(deps.storage, None, None, Order::Ascending)
-        .collect();
-    let mut listings_response = Vec::new();
-    for listing in listings {
-        let (_key, listing_data) = listing.unwrap();
-        listings_response.push(listing_data);
-    }
-    return Ok(MarketListingsResponse {
-        listings: listings_response,
+        pizzas: pizzas_response,
+        pies: pies_response,
     });
 }
 
@@ -339,30 +283,6 @@ mod tests {
         }
     }
 
-    /// checks the `address` to ensure it has the correct `expected` balance
-    fn assert_balance_is<S: Storage, A: Api, Q: Querier>(
-        deps: &OwnedDeps<S, A, Q>,
-        address: &str,
-        expected: u128,
-    ) {
-        let res = query(
-            deps.as_ref(),
-            mock_env(0),
-            QueryMsg::Balance {
-                address: address.to_string(),
-            },
-        )
-        .unwrap();
-        let balance: BalanceResponse = from_binary(&res).unwrap();
-        assert_eq!(
-            expected,
-            balance.balance.u128(),
-            "address '{}' should have {} tokens",
-            address,
-            expected
-        );
-    }
-
     #[test]
     fn proper_initialization() {
         let mut deps = mock_dependencies(&[]);
@@ -375,189 +295,8 @@ mod tests {
         )
         .unwrap();
         assert_eq!(0, res.messages.len());
-
-        let res = query(deps.as_ref(), mock_env(1), QueryMsg::TokenInfo {}).unwrap();
-        let token_info: TokenInfoResponse = from_binary(&res).unwrap();
-        assert_eq!("Tail Wag", token_info.name);
-        assert_eq!("TAG", token_info.symbol);
-        assert_eq!(10_000u128, token_info.total_supply.u128());
-        assert_eq!(0, token_info.decimals);
-
-        assert_balance_is(&deps, OWNER_ADDR, 10_000u128);
-        assert_balance_is(&deps, "another_address", 0u128);
     }
 
-    #[test]
-    fn burn() {
-        let mut deps = mock_dependencies(&[]);
-
-        let msg = InstantiateMsg {};
-        let creator_info = mock_info(OWNER_ADDR, &coins(1000, "earth"));
-
-        let res = instantiate(deps.as_mut(), mock_env(0), creator_info, msg).unwrap();
-        assert_eq!(0, res.messages.len());
-
-        assert_balance_is(&deps, OWNER_ADDR, 10_000u128);
-        execute(
-            deps.as_mut(),
-            mock_env(1),
-            mock_info(OWNER_ADDR, &coins(1000, "earth")),
-            ExecuteMsg::Burn {
-                amount: Uint128::new(1_000),
-            },
-        )
-        .unwrap();
-        assert_balance_is(&deps, OWNER_ADDR, 9_000u128);
-
-        let res = query(deps.as_ref(), mock_env(2), QueryMsg::TokenInfo {}).unwrap();
-        let token_info: TokenInfoResponse = from_binary(&res).unwrap();
-        assert_eq!(
-            9_000u128,
-            token_info.total_supply.u128(),
-            "token supply should be smaller"
-        );
-    }
-
-    #[test]
-    fn burn_all_supply() {
-        let mut deps = mock_dependencies(&[]);
-
-        let msg = InstantiateMsg {};
-        let creator_info = mock_info("creator", &coins(1000, "earth"));
-
-        let res = instantiate(deps.as_mut(), mock_env(0), creator_info, msg).unwrap();
-        assert_eq!(0, res.messages.len());
-
-        execute(
-            deps.as_mut(),
-            mock_env(1),
-            mock_info(OWNER_ADDR, &[]),
-            ExecuteMsg::Transfer {
-                amount: Uint128::from(2u128),
-                recipient: "other_address".to_string(),
-            },
-        )
-        .unwrap();
-        assert_balance_is(&deps, "other_address", 2u128);
-        execute(
-            deps.as_mut(),
-            mock_env(2),
-            mock_info("other_address", &coins(1000, "earth")),
-            ExecuteMsg::Burn {
-                amount: Uint128::new(1),
-            },
-        )
-        .unwrap();
-        execute(
-            deps.as_mut(),
-            mock_env(2),
-            mock_info("other_address", &coins(1000, "earth")),
-            ExecuteMsg::Burn {
-                amount: Uint128::new(1),
-            },
-        )
-        .unwrap();
-        assert_balance_is(&deps, "other_address", 0u128);
-        execute(
-            deps.as_mut(),
-            mock_env(4),
-            mock_info(OWNER_ADDR, &coins(1000, "earth")),
-            ExecuteMsg::Burn {
-                amount: Uint128::new(9998),
-            },
-        )
-        .unwrap();
-        assert_balance_is(&deps, OWNER_ADDR, 0u128);
-
-        let res = query(deps.as_ref(), mock_env(5), QueryMsg::TokenInfo {}).unwrap();
-        let token_info: TokenInfoResponse = from_binary(&res).unwrap();
-        assert_eq!(
-            0u128,
-            token_info.total_supply.u128(),
-            "total supply should be zero"
-        );
-    }
-
-    #[test]
-    fn transfer() {
-        let mut deps = mock_dependencies(&[]);
-        let _res = instantiate(
-            deps.as_mut(),
-            mock_env(0),
-            mock_info("creator", &coins(1000, "earth")),
-            InstantiateMsg {},
-        );
-        assert_balance_is(&deps, OWNER_ADDR, 10_000u128);
-        assert_balance_is(&deps, "other_address", 0u128);
-
-        let res = execute(
-            deps.as_mut(),
-            mock_env(1),
-            mock_info(OWNER_ADDR, &[]),
-            ExecuteMsg::Transfer {
-                amount: Uint128::from(10_001u128),
-                recipient: "other_address".to_string(),
-            },
-        );
-        match res {
-            Err(ContractError::AmountIsGreaterThanAvailableBalance {}) => {}
-            _ => panic!("must return amount is greater than available balance error"),
-        }
-
-        let _res = execute(
-            deps.as_mut(),
-            mock_env(2),
-            mock_info(OWNER_ADDR, &[]),
-            ExecuteMsg::Transfer {
-                amount: Uint128::from(3u128),
-                recipient: "other_address".to_string(),
-            },
-        );
-        assert_balance_is(&deps, OWNER_ADDR, 9_997u128);
-        assert_balance_is(&deps, "other_address", 3u128);
-
-        let _res = execute(
-            deps.as_mut(),
-            mock_env(3),
-            mock_info(OWNER_ADDR, &[]),
-            ExecuteMsg::Transfer {
-                amount: Uint128::from(0u128),
-                recipient: "other_address".to_string(),
-            },
-        );
-        assert_balance_is(&deps, OWNER_ADDR, 9_997u128);
-        assert_balance_is(&deps, "other_address", 3u128);
-
-        let _res = execute(
-            deps.as_mut(),
-            mock_env(4),
-            mock_info(OWNER_ADDR, &[]),
-            ExecuteMsg::Transfer {
-                amount: Uint128::from(9_997u128),
-                recipient: "other_address".to_string(),
-            },
-        );
-        assert_balance_is(&deps, OWNER_ADDR, 0u128);
-        assert_balance_is(&deps, "other_address", 10_000u128);
-
-        let res = execute(
-            deps.as_mut(),
-            mock_env(5),
-            mock_info(OWNER_ADDR, &[]),
-            ExecuteMsg::Transfer {
-                amount: Uint128::from(10_000u128),
-                recipient: "other_address".to_string(),
-            },
-        );
-        match res {
-            Err(ContractError::AmountIsGreaterThanAvailableBalance {}) => {}
-            _ => panic!("must return amount is greater than available balance error"),
-        }
-        assert_balance_is(&deps, OWNER_ADDR, 0u128);
-        assert_balance_is(&deps, "other_address", 10_000u128);
-    }
-
-    // TODO: the following need to go into a separate smart contract
     #[test]
     fn mint_dogs() {
         let mut deps = mock_dependencies(&[]);

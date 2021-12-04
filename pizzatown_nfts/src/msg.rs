@@ -9,9 +9,7 @@ pub struct InstantiateMsg {}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    MintPizza {
-        amount: Uint128,
-    },
+    MintPizza {},
 
     MintPie {
         pizza_a_id: String,
