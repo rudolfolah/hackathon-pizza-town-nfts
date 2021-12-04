@@ -1,0 +1,7 @@
+.LayeredImage {
+    position: relative;
+}
+
+.LayeredImage--layer {
+    position: absolute;
+}

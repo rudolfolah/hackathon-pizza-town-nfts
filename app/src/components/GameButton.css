@@ -1,0 +1,39 @@
+.game-btn-container {
+    display: flex;
+    flex-direction: row;
+    margin: 12px;
+}
+
+.game-btn-container-left {
+    background: url("button_left.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 150px;
+    width: 114px;
+}
+
+.game-btn-container-center {
+    background: url("button_center.png");
+    background-repeat: repeat-x;
+    background-size: contain;
+    height: 150px;
+    min-width: 100px;
+}
+
+.game-btn-container-right {
+    background: url("button_right.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 150px;
+    width: 114px;
+}
+
+
+.game-btn-button {
+    background: transparent;
+    border: 0;
+    font-size: 20pt;
+    font-weight: bold;
+    color: white;
+    margin-top: 35pt;
+}

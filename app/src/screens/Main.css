@@ -1,0 +1,123 @@
+.screen-main {
+    display: flex;
+}
+
+.collections {
+    display: flex;
+    flex-direction: column;
+}
+
+.pie-collection {
+    display: flex;
+}
+
+.pizza-collection {
+    /*width: 977px;*/
+}
+
+.pizza-collection header {
+    display: flex;
+}
+
+.pizza-collection header .left {
+    background: url("collection_bg_header_left.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 238px;
+}
+
+.pizza-collection header .center {
+    background: url("collection_bg_header_center.png");
+    background-repeat: repeat-x;
+    background-size: contain;
+
+    color: white;
+    font-size: 24pt;
+    height: 150px;
+    text-align: center;
+    min-width: 500px;
+}
+
+.pizza-collection header .right {
+    background: url("collection_bg_header_right.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    width: 238px;
+}
+
+.pizza-collection header h3 {
+    padding-top: 20pt;
+}
+
+.pizza-collection footer {
+    display: flex;
+}
+
+.pizza-collection footer .left {
+    background: url("collection_bg_footer_left.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 88px;
+}
+
+.pizza-collection footer .center {
+    background: url("collection_bg_footer_center.png");
+    background-repeat: repeat-x;
+    background-size: contain;
+
+    color: white;
+    font-size: 24pt;
+    height: 64px;
+    text-align: center;
+    min-width: 795px;
+}
+
+.pizza-collection footer .right {
+    background: url("collection_bg_footer_right.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 90px;
+}
+
+.pizza-items-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.pizza-items-container-left {
+    background: url("collection_bg_left.png");
+    background-repeat: repeat-y;
+    background-size: contain;
+    width: 32px;
+}
+
+.pizza-items-container-right {
+    background: url("collection_bg_right.png");
+    background-repeat: repeat-y;
+    background-size: contain;
+    width: 32px;
+}
+
+.pizza-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-gap: 10px;
+    background-color: #f5e2a7;
+    min-width: 916px;
+}
+
+.pizza-item {
+}
+
+button.mint {
+    height: 100px;
+    width: 100px;
+}
+
+button.select {
+
+}
+
+button.combine {
+
+}
