@@ -8,7 +8,7 @@ use crate::error::ContractError;
 use crate::msg::{
     ExecuteMsg, InstantiateMsg, InventoryResponse, QueryMsg,
 };
-use crate::state::{HOLDERS, TOTAL_SUPPLY, NFT_PIES, NFT_PIZZAS, NftPizzaData, NftPieData};
+use crate::state::{NFT_PIES, NFT_PIZZAS, NftPizzaData, NftPieData};
 use crate::utils::{generate_id, rand_int_between};
 use std::ops::Add;
 
@@ -18,8 +18,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 const TOKEN_NAME: &str = "Tail Wag";
 const TOKEN_SYMBOL: &str = "TAG";
 
-const INITIAL_SUPPLY: u128 = 10_000u128;
-const OWNER_ADDR: &str = "terra1wr3uw7rsjr8p94m8hlagvdrfghxuq674v5nxxc";
+const OWNER_ADDR: &str = "terra102qww57le570w0p44pw8mm6arlsekrhl7df0nk";
 
 // Testnet address for hackathon nft contract
 const HACKATHON_NFTS_CONTRACT_ADDR: &str = "terra1utd7hcq00p0grm08uyg23mdm782726y3euk8pq";
@@ -31,11 +30,7 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    // println!("{:?}", _info.funds);
-    let total_supply = Uint128::from(INITIAL_SUPPLY);
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    TOTAL_SUPPLY.save(deps.storage, &total_supply)?;
-    HOLDERS.save(deps.storage, OWNER_ADDR.as_bytes(), &total_supply)?;
 
     Ok(Response::new()
         .add_attribute("method", "instantiate")
@@ -97,34 +92,6 @@ pub fn try_mint(
         .add_attribute("amount", amount)
         .add_attribute("updated_owner_balance", updated_owner_balance)
         .add_attribute("updated_total_supply", updated_total_supply))
-}
-
-pub fn try_transfer(
-    deps: DepsMut,
-    info: MessageInfo,
-    amount: Uint128,
-    recipient: String,
-) -> Result<Response, ContractError> {
-    let sender_key = info.sender.as_bytes();
-    let current_balance = HOLDERS
-        .may_load(deps.storage, sender_key)?
-        .unwrap_or(Uint128::from(0u128));
-    match current_balance.u128().checked_sub(amount.u128()) {
-        Some(_updated_balance) => {}
-        None => return Err(ContractError::AmountIsGreaterThanAvailableBalance {}),
-    };
-    let updated_balance = current_balance.u128() - amount.u128();
-    let current_recipient_balance = HOLDERS
-        .may_load(deps.storage, recipient.as_bytes())?
-        .unwrap_or(Uint128::from(0u128));
-    let updated_recipient_balance = current_recipient_balance.u128() + amount.u128();
-    HOLDERS.save(deps.storage, sender_key, &Uint128::from(updated_balance))?;
-    HOLDERS.save(
-        deps.storage,
-        recipient.as_bytes(),
-        &Uint128::from(updated_recipient_balance),
-    )?;
-    Ok(Response::new().add_attribute("method", "try_transfer"))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
