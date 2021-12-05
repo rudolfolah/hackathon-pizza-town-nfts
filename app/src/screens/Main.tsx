@@ -57,7 +57,8 @@ export default function Main() {
     };
     connectedWallet.post(tx).then(nextTxResult => {
       console.log("Minted pizza");
-      setTimeout(() => { queryInventory(); }, 7000);
+      setTimeout(() => { queryInventory(); }, 4000);
+      setTimeout(() => { queryInventory(); }, 8000);
     }).catch((error: unknown) => {
       console.error(error);
     });
@@ -86,44 +87,17 @@ export default function Main() {
     };
     connectedWallet.post(tx).then(nextTxResult => {
       console.log("Minted pizza");
-      setTimeout(() => { queryInventory(); }, 7000);
+      setTimeout(() => { queryInventory(); }, 4000);
+      setTimeout(() => { queryInventory(); }, 8000);
     }).catch((error: unknown) => {
       console.error(error);
     });
   };
-  const executeSellDogOnMarket = (dog_id: string, price_in_uusd: string) => {
-    if (!connectedWallet || !lcd) {
-      return;
-    }
-    const executeMsg = new MsgExecuteContract(
-      connectedWallet.walletAddress,
-      CONTRACT_ADDRESS,
-      {
-        sell_dog_on_market: {
-          dog_id: dog_id,
-          price: price_in_uusd,
-        },
-      },
-      { uusd: 1 },
-    );
-    const tx: CreateTxOptions = {
-      msgs: [executeMsg],
-      fee: new StdFee(1000000, { uusd: 200000 }),
-    };
-    connectedWallet.post(tx).then(nextTxResult => {
-      console.log("Dog listed for sale");
-    }).catch((error: unknown) => {
-      console.error(error);
-    });
-  }
 
   const size = 256;
 
   return (<div className="screen-main">
     <section className="collections">
-      <section className="pie-collection">
-        <header>Collect All Pies</header>
-      </section>
       <section className="pizza-collection">
         <header>
           <section className="left">&nbsp;</section>

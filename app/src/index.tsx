@@ -13,6 +13,8 @@ import Main from 'screens/Main';
 import './style.css';
 import {TokenBalance} from "components/TokenBalance";
 import ConnectWalletButtons from "./components/ConnectWalletButtons";
+import GameButton from "./components/GameButton";
+import Button from "./components/Button";
 
 const mainnet = {
   name: 'mainnet',
@@ -38,9 +40,8 @@ ReactDOM.render(
   >
     <Router>
       <div id="nav">
-        <Link to="/">Pizza Town</Link>
-        <Link to="/about">About</Link>
-        <TokenBalance />
+        <Button to="/">Pizza Town</Button>
+        <Button to="/about">About</Button>
         <ConnectWalletButtons />
       </div>
       <Switch>
