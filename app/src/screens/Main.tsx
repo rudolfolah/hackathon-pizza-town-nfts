@@ -23,7 +23,7 @@ export default function Main() {
       chainID: connectedWallet.network.chainID,
     })
   }, [connectedWallet]);
-  const queryInventory = useCallback(() => {
+  const queryInventory = () => {
     if (connectedWallet && lcd) {
       lcd.wasm.contractQuery<PizzaTownInventoryResponse>(CONTRACT_ADDRESS, {
         "inventory": {
@@ -37,7 +37,7 @@ export default function Main() {
       setPies([]);
       setPizzas([]);
     }
-  }, [connectedWallet, lcd]);
+  };
   useEffect(() => {
     queryInventory();
   }, [connectedWallet, lcd]);
@@ -60,7 +60,7 @@ export default function Main() {
     };
     connectedWallet.post(tx).then(nextTxResult => {
       console.log("Minted pizza");
-      queryInventory();
+      setTimeout(() => { queryInventory(); }, 5000);
     }).catch((error: unknown) => {
       console.error(error);
     });
@@ -109,14 +109,8 @@ export default function Main() {
         <section className="pizza-items-container">
           <section className="pizza-items-container-left">&nbsp;</section>
           <section className="pizza-items">
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
             {pizzas?.map(pizza =>
-              <div key={pizza.id} className="pizza-item" style={{ width: size, height: size }}>
+              <div key={pizza.id} className="pizza-item" style={{ width: size + 24, height: size + 24}}>
                 <LayeredImage
                   layers={[
                     `/assets/backgrounds/0${pizza.background}.jpg`,

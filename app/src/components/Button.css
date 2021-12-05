@@ -5,13 +5,17 @@
 }
 
 .btn-button {
-    border: 1px solid rgb(243, 194, 9);
+    border: 1px solid rgb(214, 95, 238);
+    border-radius: 10px;
     font-size: 14pt;
     padding: 16px;
     cursor: pointer;
-    background: linear-gradient(0deg, #f3c209, bisque);
+    background: linear-gradient(0deg, #f309b1, #8b169d);
+    box-shadow: 0px 5px 11px black;
+    color: white;
+    font-weight: bold;
 }
 
 .btn-button:hover {
-    background: linear-gradient(0deg, #fcebd8, #f6d146);
+    background: linear-gradient(0deg, #ab2886, #581762);
 }
