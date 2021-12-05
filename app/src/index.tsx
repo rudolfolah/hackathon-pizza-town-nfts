@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 import { NetworkInfo, WalletProvider } from '@terra-money/wallet-provider';
 
-import Admin from 'screens/Admin';
 import About from 'screens/About';
 import Main from 'screens/Main';
 import './style.css';
@@ -40,15 +39,13 @@ ReactDOM.render(
     <Router>
       <div id="nav">
         <Link to="/">Pizza Town</Link>
+        <Link to="/about">About</Link>
         <TokenBalance />
         <ConnectWalletButtons />
       </div>
       <Switch>
         <Route path="/about">
           <About />
-        </Route>
-        <Route path="/admin">
-          <Admin />
         </Route>
         <Route path="/">
           <Main />

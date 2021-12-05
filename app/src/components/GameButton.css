@@ -18,6 +18,8 @@
     background-size: contain;
     height: 150px;
     min-width: 100px;
+
+    text-align: center;
 }
 
 .game-btn-container-right {

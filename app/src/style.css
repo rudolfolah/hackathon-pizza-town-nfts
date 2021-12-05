@@ -26,11 +26,11 @@ html {
 
 #nav {
   display: flex;
+  justify-content: flex-end;
 }
 
 #nav > * {
   padding: 32px;
-  border: 1px solid #2b3996;
   text-decoration: none;
 }
 

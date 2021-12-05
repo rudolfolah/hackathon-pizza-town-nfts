@@ -110,18 +110,17 @@
 .pizza-item {
     padding: 12px;
     background-color: rgba(238, 167, 18, 0.75);
-    box-shadow: 0px 0px 12px inset black;
+    box-shadow: 0px 0px 7px inset black;
+    border-radius: 10px;
 }
 
-button.mint {
-    height: 100px;
-    width: 100px;
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
 }
 
-button.select {
-
-}
-
-button.combine {
-
+.sidebar-mint {
+    margin-bottom: 40px;
 }

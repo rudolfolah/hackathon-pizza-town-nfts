@@ -4,9 +4,6 @@ import {CONTRACT_ADDRESS} from "../components/constants";
 import {useConnectedWallet} from "@terra-money/wallet-provider";
 import {CreateTxOptions, LCDClient, MsgExecuteContract, StdFee} from "@terra-money/terra.js";
 import './Main.css';
-import {PIE_IMAGES, PIZZA_IMAGES} from "../constants";
-import {Link} from "react-router-dom";
-import Button from "../components/Button";
 import LayeredImage from "../components/LayeredImage";
 import GameButton from "../components/GameButton";
 
@@ -60,7 +57,36 @@ export default function Main() {
     };
     connectedWallet.post(tx).then(nextTxResult => {
       console.log("Minted pizza");
-      setTimeout(() => { queryInventory(); }, 5000);
+      setTimeout(() => { queryInventory(); }, 7000);
+    }).catch((error: unknown) => {
+      console.error(error);
+    });
+  };
+  const handleCombineClick = () => {
+    if (!connectedWallet || !lcd) {
+      return;
+    }
+    if (!pizzas || pizzas?.length < 2) {
+      return;
+    }
+    const executeMsg = new MsgExecuteContract(
+      connectedWallet.walletAddress,
+      CONTRACT_ADDRESS,
+      {
+        mint_pie: {
+          pizza_a_id: pizzas[0].id,
+          pizza_b_id: pizzas[1].id,
+        },
+      },
+      {},
+    );
+    const tx: CreateTxOptions = {
+      msgs: [executeMsg],
+      fee: new StdFee(1000000, { uluna: 15000 }),
+    };
+    connectedWallet.post(tx).then(nextTxResult => {
+      console.log("Minted pizza");
+      setTimeout(() => { queryInventory(); }, 7000);
     }).catch((error: unknown) => {
       console.error(error);
     });
@@ -102,6 +128,34 @@ export default function Main() {
         <header>
           <section className="left">&nbsp;</section>
           <section className="center">
+            <h3>{pies?.length} Pies</h3>
+          </section>
+          <section className="right">&nbsp;</section>
+        </header>
+        <section className="pizza-items-container">
+          <section className="pizza-items-container-left">&nbsp;</section>
+          <section className="pizza-items">
+            {pies?.map(pizza =>
+              <div key={pizza.id} className="pizza-item" style={{ width: size + 24, height: size + 24}}>
+                <LayeredImage
+                  layers={[`/assets/pies/${pizza.pie}.png`]}
+                  height={size} width={size}
+                />
+              </div>
+            )}
+          </section>
+          <section className="pizza-items-container-right">&nbsp;</section>
+        </section>
+        <footer>
+          <section className="left">&nbsp;</section>
+          <section className="center">&nbsp;</section>
+          <section className="right">&nbsp;</section>
+        </footer>
+      </section>
+      <section className="pizza-collection">
+        <header>
+          <section className="left">&nbsp;</section>
+          <section className="center">
             <h3>{pizzas?.length} Pizzas</h3>
           </section>
           <section className="right">&nbsp;</section>
@@ -113,11 +167,11 @@ export default function Main() {
               <div key={pizza.id} className="pizza-item" style={{ width: size + 24, height: size + 24}}>
                 <LayeredImage
                   layers={[
-                    `/assets/backgrounds/0${pizza.background}.jpg`,
-                    `/assets/pizzas/0${pizza.pizza}.png`,
-                    `/assets/toppings/a0${pizza.topping1}.png`,
-                    `/assets/toppings/b0${pizza.topping2}.png`,
-                    `/assets/toppings/c0${pizza.topping3}.png`,
+                    `/assets/backgrounds/${pizza.background}.jpg`,
+                    `/assets/pizzas/${pizza.pizza}.png`,
+                    `/assets/toppings/a${pizza.topping1}.png`,
+                    `/assets/toppings/b${pizza.topping2}.png`,
+                    `/assets/toppings/c${pizza.topping3}.png`,
                   ]}
                   height={size} width={size}
                 />
@@ -140,10 +194,7 @@ export default function Main() {
         </GameButton>
       </section>
       <section className="sidebar-combine">
-        <GameButton onClick={() => {}}>
-          Select 2 Pizzas
-        </GameButton>
-        <GameButton onClick={() => {}}>
+        <GameButton onClick={handleCombineClick}>
           Combine
         </GameButton>
       </section>
