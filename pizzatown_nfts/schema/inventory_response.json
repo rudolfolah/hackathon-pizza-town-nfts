@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InventoryResponse",
+  "type": "object",
+  "required": [
+    "address",
+    "pies",
+    "pizzas"
+  ],
+  "properties": {
+    "address": {
+      "type": "string"
+    },
+    "pies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/NftPieData"
+      }
+    },
+    "pizzas": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/NftPizzaData"
+      }
+    }
+  },
+  "definitions": {
+    "NftPieData": {
+      "type": "object",
+      "required": [
+        "id",
+        "pie"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "pie": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      }
+    },
+    "NftPizzaData": {
+      "type": "object",
+      "required": [
+        "background",
+        "id",
+        "pizza",
+        "topping1",
+        "topping2",
+        "topping3"
+      ],
+      "properties": {
+        "background": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "id": {
+          "type": "string"
+        },
+        "pizza": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "topping1": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "topping2": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "topping3": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      }
+    }
+  }
+}
