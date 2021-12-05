@@ -1,0 +1,2 @@
+a88682ecec3b7c813a77fbcad26c2c16b640bdee3a56c88c0095ca96ec375158  hackathon_nfts.wasm
+f8195b1117bea111e7fddca5728f81534bae8145a2dfbc638a875ad55f35278a  token.wasm
