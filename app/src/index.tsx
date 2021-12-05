@@ -13,6 +13,7 @@ import About from 'screens/About';
 import Main from 'screens/Main';
 import './style.css';
 import {TokenBalance} from "components/TokenBalance";
+import ConnectWalletButtons from "./components/ConnectWalletButtons";
 
 const mainnet = {
   name: 'mainnet',
@@ -40,6 +41,7 @@ ReactDOM.render(
       <div id="nav">
         <Link to="/">Pizza Town</Link>
         <TokenBalance />
+        <ConnectWalletButtons />
       </div>
       <Switch>
         <Route path="/about">

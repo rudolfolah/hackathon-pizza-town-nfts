@@ -5,15 +5,16 @@ export interface Coin {
 
 export interface NftPizza {
   id: string;
-  attr1: number;
-  attr2: number;
-  attr3: number;
-  attr4: number;
+  background: number,
+  pizza: number,
+  topping1: number,
+  topping2: number,
+  topping3: number,
 }
 
 export interface NftPie {
   id: string;
-  quantity: number;
+  pie: number;
 }
 
 export interface NftHackathon {

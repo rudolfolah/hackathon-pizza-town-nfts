@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
 import {NftPizza, NftPie, PizzaTownInventoryResponse} from "../types";
 import {CONTRACT_ADDRESS} from "../components/constants";
 import {useConnectedWallet} from "@terra-money/wallet-provider";
@@ -23,7 +23,7 @@ export default function Main() {
       chainID: connectedWallet.network.chainID,
     })
   }, [connectedWallet]);
-  useEffect(() => {
+  const queryInventory = useCallback(() => {
     if (connectedWallet && lcd) {
       lcd.wasm.contractQuery<PizzaTownInventoryResponse>(CONTRACT_ADDRESS, {
         "inventory": {
@@ -38,8 +38,33 @@ export default function Main() {
       setPizzas([]);
     }
   }, [connectedWallet, lcd]);
+  useEffect(() => {
+    queryInventory();
+  }, [connectedWallet, lcd]);
 
-  const [dogSaleAmount, setDogSaleAmount] = useState<string>("1");
+  const handleMintClick = () => {
+    if (!connectedWallet || !lcd) {
+      return;
+    }
+    const executeMsg = new MsgExecuteContract(
+      connectedWallet.walletAddress,
+      CONTRACT_ADDRESS,
+      {
+        mint_pizza: {},
+      },
+      {},
+    );
+    const tx: CreateTxOptions = {
+      msgs: [executeMsg],
+      fee: new StdFee(1000000, { uluna: 15000 }),
+    };
+    connectedWallet.post(tx).then(nextTxResult => {
+      console.log("Minted pizza");
+      queryInventory();
+    }).catch((error: unknown) => {
+      console.error(error);
+    });
+  };
   const executeSellDogOnMarket = (dog_id: string, price_in_uusd: string) => {
     if (!connectedWallet || !lcd) {
       return;
@@ -90,63 +115,18 @@ export default function Main() {
                 height={size} width={size}
               />
             </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
-            <div className="pizza-item" style={{ width: size, height: size }}>
-              <LayeredImage
-                layers={["/assets/backgrounds/01.jpg", "/assets/pizzas/01.png", "/assets/toppings/a01.png", "/assets/toppings/b01.png", "/assets/toppings/c01.png",]}
-                height={size} width={size}
-              />
-            </div>
             {pizzas?.map(pizza =>
-              <div className="pizza-item" key={pizza.id}>
-                <LayeredImage layers={["/assets/accessory-martini.png", "/assets/dog01.png"]}  height={100} width={100} />
+              <div key={pizza.id} className="pizza-item" style={{ width: size, height: size }}>
+                <LayeredImage
+                  layers={[
+                    `/assets/backgrounds/0${pizza.background}.jpg`,
+                    `/assets/pizzas/0${pizza.pizza}.png`,
+                    `/assets/toppings/a0${pizza.topping1}.png`,
+                    `/assets/toppings/b0${pizza.topping2}.png`,
+                    `/assets/toppings/c0${pizza.topping3}.png`,
+                  ]}
+                  height={size} width={size}
+                />
               </div>
             )}
           </section>
@@ -161,7 +141,7 @@ export default function Main() {
     </section>
     <section className="sidebar">
       <section className="sidebar-mint">
-        <GameButton onClick={() => {}}>
+        <GameButton onClick={handleMintClick}>
           Mint
         </GameButton>
       </section>
