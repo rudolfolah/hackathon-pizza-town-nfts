@@ -1,5 +1,4 @@
-use cosmwasm_std::{Coin, Uint128};
-use cw_storage_plus::{Item, Map}; // See: https://github.com/CosmWasm/cw-plus/tree/main/packages/storage-plus
+use cw_storage_plus::Map; // See: https://github.com/CosmWasm/cw-plus/tree/main/packages/storage-plus
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -21,7 +20,11 @@ pub struct NftPieData {
     pub id: String,
 }
 
+// consider using an integer vector to allow future airdrops
+// simplifying lets us check just for the existence of the key
+pub const AIRDROP_CLAIMS: Map<&[u8], bool> = Map::new("airdrop_claims");
+
 // key is a combination of the owner's address and the object's generated id
-pub const NFT_PIZZAS: Map<(&[u8], &[u8]), DogData> = Map::new("all_pizzas");
+pub const NFT_PIZZAS: Map<(&[u8], &[u8]), NftPizzaData> = Map::new("all_pizzas");
 // key is a combination of the owner's address and the object's generated id
-pub const NFT_PIES: Map<(&[u8], &[u8]), AccessoryData> = Map::new("all_pies");
+pub const NFT_PIES: Map<(&[u8], &[u8]), NftPieData> = Map::new("all_pies");

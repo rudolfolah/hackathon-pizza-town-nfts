@@ -1,5 +1,4 @@
 use crate::state::{NftPieData, NftPizzaData};
-use cosmwasm_std::{Binary, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
