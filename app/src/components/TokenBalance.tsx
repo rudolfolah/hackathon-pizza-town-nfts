@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from "react";
 import {LCDClient} from "@terra-money/terra.js";
 import {useConnectedWallet} from "@terra-money/wallet-provider";
 
-import {CONTRACT_ADDRESS, TOKEN_SYMBOL} from "./constants";
+import {CONTRACT_ADDRESS} from "./constants";
 import {BalanceResponse} from "../types";
 
 export function TokenBalance() {
